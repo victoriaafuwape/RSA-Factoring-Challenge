@@ -26,19 +26,21 @@ void factorize_numbers(const char *filename)
 void factorize_and_print(unsigned long number)
 {
 	unsigned long i;
+	unsigned long larger_factor;
 
 	for (i = 2; i <= number / i; ++i)
 	{
 		if (number % i == 0) /* Check if i is a factor of number */
 		{
+			larger_factor = number / i;
 			printf("%lu=%lu*%lu\n",
-			       number, i, number / i); /* Print factors */
+			       number, larger_factor, i); /* Print factors */
 			return;
 		}
 	}
 
 	/* If no factors found, print the number itself (prime number case) */
-	printf("%lu=%lu*%u\n", number, number, 1);
+	printf("%lu=%lu*1\n", number, number);
 }
 
 /**

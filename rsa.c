@@ -1,66 +1,56 @@
 #include "main.h"
 
-unsigned long gcd(unsigned long a, unsigned long b) {
-    if (b == 0)
-        return a;
-    return gcd(b, a % b);
+int is_prime(unsigned long number) {
+    if (number <= 1) return 0; // 0 and 1 are not prime numbers
+    if (number <= 3) return 1; // 2 and 3 are prime numbers
+
+    // Check for divisibility by 2 and 3
+    if (number % 2 == 0 || number % 3 == 0) return 0;
+
+    for (unsigned long i = 5; i * i <= number; i += 6) {
+        if (number % i == 0 || number % (i + 2) == 0)
+            return 0;
+    }
+
+    return 1;
 }
 
-unsigned long absolute_difference(unsigned long x, unsigned long y) {
-    return (x > y) ? (x - y) : (y - x);
+/* Modified factorize_and_print function */
+void factorize_and_print(unsigned long number) {
+    for (unsigned long i = 2; i <= number / i; ++i) {
+        if (number % i == 0) {
+            unsigned long larger_factor = number / i;
+            if (is_prime(i) && is_prime(larger_factor)) {
+                printf("%lu=%lu*%lu\n", number, larger_factor, i);
+                return;
+            }
+        }
+    }
+
+    printf("No prime factors found for %lu\n", number); // In case no prime factors are found
 }
 
-unsigned long f(unsigned long x, unsigned long n) {
-    return (x * x + 1) % n;
-}
-
-unsigned long pollards_rho(unsigned long n)
-{
-	unsigned long x, y, d;
-
-	if (n % 2 == 0)
-		return 2;
-
-	x = 2;
-	y = 2;
-	d = 1;
-
-	while (d == 1)
-	{
-		x = f(x, n);
-		y = f(f(y, n), n);
-		d = gcd(absolute_difference(x, y), n);
-	}
-
-	return d;
-}
-
-void factorize_and_print(unsigned long n) {
-	unsigned long divisor;
-
-	if (n == 1)
-		return;
-
-	divisor = pollards_rho(n);
-	if (divisor == n) {
-		printf("%lu is a prime factor\n", n);
-	} else {
-		printf("%lu is a factor\n", divisor);
-		factorize_and_print(n / divisor);
-	}
-}
-
+/* Main function */
 int main(int argc, char *argv[]) {
-	unsigned long n;
+    if (argc != 2) {
+        fprintf(stderr, "Usage: rsa <file>\n");
+        return 1;
+    }
 
-	if (argc != 2) {
-		fprintf(stderr, "Usage: %s <number>\n", argv[0]);
-		return 1;
-	}
+    const char *filename = argv[1];
+    FILE *file = fopen(filename, "r");
+    if (file == NULL) {
+        fprintf(stderr, "Error opening file: %s\n", filename);
+        return 1;
+    }
 
-	n = strtoul(argv[1], NULL, 10);
-	printf("Factoring %lu:\n", n);
-	factorize_and_print(n);
+    unsigned long number;
+    if (fscanf(file, "%lu", &number) != EOF) {
+        factorize_and_print(number);
+    } else {
+        fprintf(stderr, "Error reading the number from the file\n");
+    }
 
-	return 0;
+    fclose(file);
+    return 0;
 }
